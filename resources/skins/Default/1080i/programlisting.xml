@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<views>50</views>
+	<controls>
+		<control type="list" id="50">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1090</height>
+			<viewtype label="535">icon</viewtype>
+			<itemlayout height="50" width="1920">
+				<control type="label">
+					<left>0</left>
+					<top>0</top>
+					<height>50</height>
+					<width>1920</width>
+					<font>font13</font>
+					<label>$INFO[ListItem.Label]</label>
+				</control>
+			</itemlayout>
+			<focusedlayout height="50" width="1920">
+				<control type="label">
+					<left>0</left>
+					<top>0</top>
+					<height>50</height>
+					<width>1920</width>
+					<font>font13</font>
+					<label>$INFO[ListItem.Label]</label>
+					<textcolor>orange</textcolor>
+				</control>
+			</focusedlayout>
+		</control>
+	</controls>
+</window>
