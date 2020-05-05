@@ -4,23 +4,22 @@ import subprocess
 import sys
 import threading
 
-import xml.etree.ElementTree as etree
-
-import xdg.Menu
 import xdg.IconTheme
+import xdg.Menu
+
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+import xml.etree.ElementTree as etree
 
 
-ADDON = xbmcaddon.Addon(id='script.customutils')
+ADDON = xbmcaddon.Addon(id="script.xdgmenu")
 ADDON_HANDLE = int(sys.argv[1]) if len(sys.argv) > 1 else None
-CWD = ADDON.getAddonInfo('path').decode('utf-8')
+CWD = ADDON.getAddonInfo("path")
 
 
 class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
-
     def parse(self, filename=None):
         """Load an applications.menu file.
 
@@ -32,19 +31,21 @@ class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
             filename = xdg.Menu._get_menu_file_path(filename)
         # use default if no filename given
         if not filename:
-            candidate = os.environ.get('XDG_MENU_PREFIX', '') + "applications.menu"
+            candidate = os.environ.get("XDG_MENU_PREFIX", "") + "applications.menu"
             filename = xdg.Menu._get_menu_file_path(candidate)
         if not filename:
-            raise xdg.Menu.ParsingError('File not found', "/etc/xdg/menus/%s" % candidate)
+            raise xdg.Menu.ParsingError(
+                "File not found", "/etc/xdg/menus/%s" % candidate
+            )
         # check if it is a .menu file
         if not filename.endswith(".menu"):
-            raise xdg.Menu.ParsingError('Not a .menu file', filename)
+            raise xdg.Menu.ParsingError("Not a .menu file", filename)
         # create xml parser
         try:
             tree = etree.parse(filename)
         except Exception as e:
-            log(xdg.Menu.ParsingError('Not a valid .menu file', filename))
-            tree = etree.fromstring('<Menu></Menu>')
+            log(xdg.Menu.ParsingError("Not a valid .menu file", filename))
+            tree = etree.fromstring("<Menu></Menu>")
 
         # parse menufile
         self._merged_files = set()
@@ -93,9 +94,16 @@ def read_xdg_menu():
         except AttributeError:
             try:
                 if not x.DesktopEntry.getHidden() and not x.DesktopEntry.getNoDisplay():
-                    if not x.DesktopEntry.getTryExec() or which(x.DesktopEntry.getTryExec()):
+                    if not x.DesktopEntry.getTryExec() or which(
+                        x.DesktopEntry.getTryExec()
+                    ):
                         entries.append(
-                            [x.DesktopEntry.filename, x.DesktopEntry.getName(), x.DesktopEntry.getComment(), x.DesktopEntry.getIcon()]
+                            [
+                                x.DesktopEntry.filename,
+                                x.DesktopEntry.getName(),
+                                x.DesktopEntry.getComment(),
+                                x.DesktopEntry.getIcon(),
+                            ]
                         )
             except AttributeError:
                 pass
@@ -111,7 +119,10 @@ def read_xdg_menu():
     for item in menuitems:
         if os.path.basename(item[0]) in new_menuitems:
             if item[0] != new_menuitems[os.path.basename(item[0])][0]:
-                log("Not including %s because %s is already in there" % (item[0], new_menuitems[os.path.basename(item[0])])[0])
+                log(
+                    "Not including %s because %s is already in there"
+                    % (item[0], new_menuitems[os.path.basename(item[0])])[0]
+                )
         # the icon at the end
         item[-1] = xdg.IconTheme.getIconPath(item[-1])
         new_menuitems[os.path.basename(item[0])] = item
@@ -127,12 +138,14 @@ def _run_and_forget(cmd):
 
 preruns = {
     "google-chrome.desktop": [
-        "bash", "-c", '''
+        "bash",
+        "-c",
+        """
 if xdotool search --desktop 0 --all --class --name Chrome windowactivate ; then
   exit
 fi
 exit 1
-'''
+""",
     ]
 }
 
@@ -144,19 +157,18 @@ def log(text):
 
 
 class ExternalProgramListing(xbmcgui.WindowXML):
-
     def __init__(self, *args, **kwargs):
-        self.xdg_menu_items = kwargs.pop('items')
+        self.xdg_menu_items = kwargs.pop("items")
         xbmcgui.WindowXML.__init__(self, *args, **kwargs)
 
     def onInit(self):
-        xbmc.executebuiltin('Container.SetViewMode(50)')
+        xbmc.executebuiltin("Container.SetViewMode(50)")
         listitems = []
         for action, title, comment, icon in self.xdg_menu_items:
             listitems.append(xbmcgui.ListItem(title, comment))
-            listitems[-1].setProperty('action', action)
+            listitems[-1].setProperty("action", action)
             if icon:
-                listitems[-1].setArt({'icon': icon})
+                listitems[-1].setArt({"icon": icon})
         # now we are going to add all the items we have defined to the (built-in) container
         self.addItems(listitems)
         # give kodi a bit of (processing) time to add all items to the container
@@ -167,7 +179,7 @@ class ExternalProgramListing(xbmcgui.WindowXML):
     def onClick(self, controlId):
         if controlId == self.getCurrentContainerId():
             item = self.getListItem(self.getCurrentListPosition())
-            action = item.getProperty('action')
+            action = item.getProperty("action")
             try:
                 base = os.path.basename(action)
                 if base in preruns:
@@ -188,9 +200,11 @@ def _main(*args):
         globals()[args[0]](*args[1:])
     else:
         items = read_xdg_menu()
-        win = ExternalProgramListing("programlisting.xml", CWD, 'Default', '1080i', items=items)
+        win = ExternalProgramListing(
+            "programlisting.xml", CWD, "Default", "1080i", items=items
+        )
         win.doModal()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _main(*sys.argv[1:])

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.customutils" name="Custom utilities" version="0.0.1" provider-name="me">
+<addon id="script.xdgmenu" name="XDG menu" version="0.0.1" provider-name="me">
         <requires>
                 <import addon="xbmc.python" version="2.25.0"/>
         </requires>
@@ -7,8 +7,8 @@
                 <provides>executable</provides>
         </extension>
         <extension point="xbmc.addon.metadata">
-                <summary lang="en_US">Custom utils</summary>
-                <description lang="en_US">A script to run various programs and tasks</description>
+                <summary lang="en_US">XDG menu</summary>
+                <description lang="en_US">A script to run various programs from your Linux desktop's menu</description>
                 <language></language>
                 <platform>all</platform>
         </extension>
