@@ -1,34 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<views>50</views>
+	<views>55</views>
 	<controls>
-		<control type="list" id="50">
+		<control type="list" id="55">
 			<left>0</left>
 			<top>0</top>
 			<width>1920</width>
 			<height>1090</height>
 			<viewtype label="535">icon</viewtype>
-			<itemlayout height="50" width="1920">
-				<control type="label">
-					<left>0</left>
-					<top>0</top>
-					<height>50</height>
-					<width>1920</width>
-					<font>font13</font>
-					<label>$INFO[ListItem.Label]</label>
-				</control>
-			</itemlayout>
-			<focusedlayout height="50" width="1920">
-				<control type="label">
-					<left>0</left>
-					<top>0</top>
-					<height>50</height>
-					<width>1920</width>
-					<font>font13</font>
-					<label>$INFO[ListItem.Label]</label>
-					<textcolor>orange</textcolor>
-				</control>
-			</focusedlayout>
+
+		<focusedlayout height="80">
+			<control type="image">
+				<left>0</left>
+				<top>0</top>
+				<width>80</width>
+				<height>80</height>
+				<texture>$INFO[ListItem.Icon]</texture>
+			</control>
+			<control type="label">
+				<left>96</left>
+				<height>80</height>
+				<right>540</right>
+				<aligny>center</aligny>
+				<scroll>true</scroll>
+				<label>$INFO[ListItem.Label]</label>
+				<textcolor>orange</textcolor>
+				<shadowcolor>text_shadow</shadowcolor>
+			</control>
+			<control type="label">
+				<left>540</left>
+				<height>80</height>
+				<right>1920</right>
+				<align>right</align>
+				<aligny>center</aligny>
+				<label>$INFO[ListItem.Label2]</label>
+				<shadowcolor>text_shadow</shadowcolor>
+			</control>
+		</focusedlayout>
+		<itemlayout height="80" condition="Container.Content(songs)">
+			<control type="image">
+				<left>0</left>
+				<top>0</top>
+				<width>80</width>
+				<height>80</height>
+				<texture>$INFO[ListItem.Icon]</texture>
+			</control>
+			<control type="label">
+				<left>96</left>
+				<height>80</height>
+				<right>540</right>
+				<aligny>center</aligny>
+				<label>$INFO[ListItem.Label]</label>
+				<shadowcolor>text_shadow</shadowcolor>
+			</control>
+			<control type="label">
+				<left>540</left>
+				<height>80</height>
+				<right>1920</right>
+				<align>right</align>
+				<aligny>center</aligny>
+				<label>$INFO[ListItem.Label2]</label>
+				<textcolor>grey</textcolor>
+				<shadowcolor>text_shadow</shadowcolor>
+			</control>
+		</itemlayout>
 		</control>
 	</controls>
 </window>

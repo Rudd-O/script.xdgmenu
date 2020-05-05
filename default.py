@@ -162,9 +162,11 @@ class ExternalProgramListing(xbmcgui.WindowXML):
         xbmcgui.WindowXML.__init__(self)
 
     def onInit(self):
-        xbmc.executebuiltin("Container.SetViewMode(50)")
+        xbmc.executebuiltin("Container.SetViewMode(55)")
         listitems = []
-        for action, title, comment, icon in self.xdg_menu_items:
+        for action, title, comment, icon in sorted(
+            self.xdg_menu_items, key=lambda x: x[1].lower()
+        ):
             listitems.append(xbmcgui.ListItem(title, comment))
             listitems[-1].setProperty("action", action)
             if icon:
