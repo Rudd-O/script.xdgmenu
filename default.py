@@ -159,7 +159,7 @@ def log(text):
 class ExternalProgramListing(xbmcgui.WindowXML):
     def __init__(self, *args, **kwargs):
         self.xdg_menu_items = kwargs.pop("items")
-        xbmcgui.WindowXML.__init__(self, *args, **kwargs)
+        xbmcgui.WindowXML.__init__(self)
 
     def onInit(self):
         xbmc.executebuiltin("Container.SetViewMode(50)")
