@@ -4,7 +4,21 @@ import subprocess
 import sys
 import threading
 
-import xdg.IconTheme
+
+def log(text):
+    sys.stdout.write(str(text) + "\n")
+
+
+try:
+    import xdg.IconTheme
+except ImportError:
+    if sys.version_info.major == 2:
+        # This system does not have python XDG installed for Python 2.
+        # We will attempt to import the dependencies from Python 3 instead.
+        log("WARNING: attempting Python 3 import of XDG modules in Python 2 interpreter.")
+        out = subprocess.check_output(["bash", "-c", "echo 'import site ; print(\"\\n\".join(site.getsitepackages()))' | python3"])
+        sys.path.extend([x for x in out.splitlines() if x])
+    import xdg.IconTheme
 import xdg.Menu
 
 import xbmc
@@ -148,12 +162,6 @@ exit 1
 """,
     ]
 }
-
-
-def log(text):
-    return
-    with open("/tmp/x", "a") as f:
-        f.write(str(text) + "\n")
 
 
 class ExternalProgramListing(xbmcgui.WindowXML):
