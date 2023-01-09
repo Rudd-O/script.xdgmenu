@@ -1,10 +1,12 @@
 import collections
 import os
+import urllib.parse
 import subprocess
 import sys
 import threading
 
 from shutil import which
+from xbmc import log
 
 import xbmc
 import xbmcaddon
@@ -14,10 +16,6 @@ import xbmcplugin
 import xml.etree.ElementTree as etree
 import xdg.IconTheme
 import xdg.Menu
-
-
-def log(text):
-    sys.stdout.write(str(text) + "\n")
 
 
 class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
@@ -114,20 +112,29 @@ def read_xdg_menu():
 
 
 def _run_and_forget(cmd):
-    p = subprocess.Popen(cmd, stdin=open(os.devnull))
+    try:
+        p = subprocess.Popen(cmd, stdin=open(os.devnull))
+    except Exception as e:
+        xbmcgui.Dialog().notification(
+            "Cannot launch program",
+            "An error happened when launching a program (%s)" % (e,),
+        )
     t = threading.Thread(target=p.wait)
     t.setDaemon(True)
     t.start()
 
 
-def launch(action):
+def run_desktop_file(desktop_file):
     if which("kioclient"):
-        _run_and_forget(["kioclient", "exec", action])
+        _run_and_forget(["kioclient", "exec", desktop_file])
     elif which("gtk-launch"):
-        _run_and_forget(["gtk-launch", action])
+        _run_and_forget(["gtk-launch", desktop_file])
     else:
-        # FIXME make error dialog
-        log("Cannot launch %s as no launch program is installed" % action)
+        xbmcgui.Dialog().notification(
+            "Cannot launch program",
+            "Cannot launch %s as no launch program (kioclient or gtk-launch) is installed."
+            % (os.path.basename(desktop_file)),
+        )
 
 
 preruns = {
@@ -144,68 +151,54 @@ exit 1
 }
 
 
-class ExternalProgramListing(xbmcgui.WindowXML):
-    def __init__(self, *args, **kwargs):
-        self.xdg_menu_items = kwargs.pop("items")
-        xbmcgui.WindowXML.__init__(self)
+def launch(desktop_file):
+    prerun = preruns.get(os.path.basename(desktop_file), None)
+    if prerun:
+        try:
+            subprocess.check_call(prerun)
+        except subprocess.CalledProcessError:
+            run_desktop_file(desktop_file)
+    else:
+        run_desktop_file(desktop_file)
 
-    def onInit(self):
-        xbmc.executebuiltin("Container.SetViewMode(55)")
-        listitems = []
-        for action, title, comment, icon in sorted(
-            self.xdg_menu_items, key=lambda x: x[1].lower()
-        ):
-            listitems.append(xbmcgui.ListItem(title, comment))
-            listitems[-1].setProperty("action", action)
-            if icon:
-                listitems[-1].setArt({"icon": icon})
-        # now we are going to add all the items we have defined to the (built-in) container
-        self.addItems(listitems)
-        # give kodi a bit of (processing) time to add all items to the container
-        xbmc.sleep(100)
-        # this puts the focus on the top item of the container
-        self.setFocusId(self.getCurrentContainerId())
 
-    def onClick(self, controlId):
-        if controlId == self.getCurrentContainerId():
-            item = self.getListItem(self.getCurrentListPosition())
-            action = item.getProperty("action")
-            try:
-                base = os.path.basename(action)
-                if base in preruns:
-                    prerun = preruns[base]
-                    try:
-                        subprocess.check_call(prerun)
-                    except subprocess.CalledProcessError:
-                        launch(action)
-                else:
-                    launch(action)
-            finally:
-                self.close()
+def encodepath(path):
+    return urllib.parse.quote(path)
+
+
+def build_url(base, query):
+    return base + "?" + urllib.parse.urlencode(query)
 
 
 def _main(*args):
-    ADDON = xbmcaddon.Addon(id="script.xdgmenu")
+    addon = xbmcaddon.Addon(id="script.xdgmenu")
     handle = int(sys.argv[1])
     second_arg = args[1]
-    third_arg = args[2]
-    cwd = ADDON.getAddonInfo("path")
+    unused_third_arg = args[2]
+
+    for i in range(len(args)):
+        log('addon_argv[{}] "{}"'.format(i, args[i]))
 
     if second_arg:
-        log(args)
-        globals()[args[0]](*args[1:])
+        args = urllib.parse.parse_qs(second_arg[1:])
+        if "launch" in args:
+            launch(args["launch"][0])
+        else:
+            raise Exception("Unknown args: %s" % args)
     else:
-        for action, title, comment, icon in sorted(
+        for path, title, comment, icon in sorted(
             read_xdg_menu(), key=lambda x: x[1].lower()
         ):
-            li = xbmcgui.ListItem(title, comment, action)
-            li.setProperty("action", action)
+            li = xbmcgui.ListItem(title, comment)
+            li.setProperty("IsPlayable", "True")
             if icon:
                 li.setArt({"icon": icon})
-            xbmcplugin.AddDirectoryItem(
+            url = build_url(sys.argv[0], {"launch": path})
+            xbmcplugin.addDirectoryItem(
                 handle=handle,
-                url=action,
+                url=url,
                 listitem=li,
+                isFolder=True,
             )
         xbmcplugin.endOfDirectory(handle)
 
