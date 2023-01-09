@@ -198,7 +198,7 @@ def _main(*args):
                 handle=handle,
                 url=url,
                 listitem=li,
-                isFolder=True,
+                isFolder=False,
             )
         xbmcplugin.endOfDirectory(handle)
 
