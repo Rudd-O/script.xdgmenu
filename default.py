@@ -20,11 +20,6 @@ def log(text):
     sys.stdout.write(str(text) + "\n")
 
 
-ADDON = xbmcaddon.Addon(id="script.xdgmenu")
-ADDON_HANDLE = int(sys.argv[1]) if len(sys.argv) > 1 else None
-CWD = ADDON.getAddonInfo("path")
-
-
 class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
     def parse(self, filename=None):
         """Load an applications.menu file.
@@ -190,15 +185,29 @@ class ExternalProgramListing(xbmcgui.WindowXML):
 
 
 def _main(*args):
-    if args:
+    ADDON = xbmcaddon.Addon(id="script.xdgmenu")
+    handle = int(sys.argv[1])
+    second_arg = args[1]
+    third_arg = args[2]
+    cwd = ADDON.getAddonInfo("path")
+
+    if second_arg:
         log(args)
         globals()[args[0]](*args[1:])
     else:
-        items = read_xdg_menu()
-        win = ExternalProgramListing(
-            "programlisting.xml", CWD, "Default", "1080i", items=items
-        )
-        win.doModal()
+        for action, title, comment, icon in sorted(
+            read_xdg_menu(), key=lambda x: x[1].lower()
+        ):
+            li = xbmcgui.ListItem(title, comment, action)
+            li.setProperty("action", action)
+            if icon:
+                li.setArt({"icon": icon})
+            xbmcplugin.AddDirectoryItem(
+                handle=handle,
+                url=action,
+                listitem=li,
+            )
+        xbmcplugin.endOfDirectory(handle)
 
 
 if __name__ == "__main__":
