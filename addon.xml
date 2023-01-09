@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.xdgmenu" name="XDG menu" version="0.0.3" provider-name="https://github.com/Rudd-O/script.xdgmenu">
+<addon id="script.xdgmenu" name="XDG menu" version="0.0.4" provider-name="https://github.com/Rudd-O/script.xdgmenu">
         <requires>
                 <import addon="xbmc.python" version="3.0.0"/>
                 <import addon="script.module.elementtree" version="1.2.8" />
-                <import addon="script.module.pyxdg" version="0.27" />
+                <import addon="script.module.pyxdg" version="0.27.1" />
         </requires>
         <extension point="xbmc.python.script" library="default.py">
                 <provides>executable</provides>
@@ -12,6 +12,6 @@
                 <summary lang="en_US">XDG menu</summary>
                 <description lang="en_US">A script to run various programs from your Linux desktop's menu</description>
                 <language></language>
-                <platform>all</platform>
+                <platform>linux</platform>
         </extension>
 </addon>
