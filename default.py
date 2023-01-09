@@ -189,11 +189,11 @@ def _main(*args):
         for path, title, comment, icon in sorted(
             read_xdg_menu(), key=lambda x: x[1].lower()
         ):
+            url = build_url(sys.argv[0], {"launch": path})
             li = xbmcgui.ListItem(title, comment)
-            li.setProperty("IsPlayable", "True")
+            li.setPath(url)
             if icon:
                 li.setArt({"icon": icon})
-            url = build_url(sys.argv[0], {"launch": path})
             xbmcplugin.addDirectoryItem(
                 handle=handle,
                 url=url,
