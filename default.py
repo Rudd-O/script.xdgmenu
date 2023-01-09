@@ -4,28 +4,20 @@ import subprocess
 import sys
 import threading
 
-
-def log(text):
-    sys.stdout.write(str(text) + "\n")
-
-
-try:
-    import xdg.IconTheme
-except ImportError:
-    if sys.version_info.major == 2:
-        # This system does not have python XDG installed for Python 2.
-        # We will attempt to import the dependencies from Python 3 instead.
-        log("WARNING: attempting Python 3 import of XDG modules in Python 2 interpreter.")
-        out = subprocess.check_output(["bash", "-c", "echo 'import site ; print(\"\\n\".join(site.getsitepackages()))' | python3"])
-        sys.path.extend([x for x in out.splitlines() if x])
-    import xdg.IconTheme
-import xdg.Menu
+from shutil import which
 
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+
 import xml.etree.ElementTree as etree
+import xdg.IconTheme
+import xdg.Menu
+
+
+def log(text):
+    sys.stdout.write(str(text) + "\n")
 
 
 ADDON = xbmcaddon.Addon(id="script.xdgmenu")
@@ -83,23 +75,6 @@ class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
         return menu
 
 
-def which(program):
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
-
-
 def read_xdg_menu():
     def recurse(x):
         entries = []
@@ -150,6 +125,16 @@ def _run_and_forget(cmd):
     t.start()
 
 
+def launch(action):
+    if which("kioclient"):
+        _run_and_forget(["kioclient", "exec", action])
+    elif which("gtk-launch"):
+        _run_and_forget(["gtk-launch", action])
+    else:
+        # FIXME make error dialog
+        log("Cannot launch %s as no launch program is installed" % action)
+
+
 preruns = {
     "google-chrome.desktop": [
         "bash",
@@ -197,9 +182,9 @@ class ExternalProgramListing(xbmcgui.WindowXML):
                     try:
                         subprocess.check_call(prerun)
                     except subprocess.CalledProcessError:
-                        _run_and_forget(["kioclient", "exec", action])
+                        launch(action)
                 else:
-                    _run_and_forget(["kioclient", "exec", action])
+                    launch(action)
             finally:
                 self.close()
 
