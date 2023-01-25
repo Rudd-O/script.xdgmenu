@@ -6,12 +6,11 @@ import sys
 import threading
 
 from shutil import which
-from xbmc import log
+from xbmc import log  # type: ignore
 
-import xbmc
-import xbmcaddon
-import xbmcgui
-import xbmcplugin
+import xbmcaddon  # type: ignore
+import xbmcgui  # type: ignore
+import xbmcplugin  # type: ignore
 
 import xml.etree.ElementTree as etree
 import xdg.IconTheme
@@ -23,14 +22,16 @@ class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
         """Load an applications.menu file.
 
         filename : str, optional
-          The default is ``$XDG_CONFIG_DIRS/menus/${XDG_MENU_PREFIX}applications.menu``.
+          The default is
+          ``$XDG_CONFIG_DIRS/menus/${XDG_MENU_PREFIX}applications.menu``.
         """
         # convert to absolute path
         if filename and not os.path.isabs(filename):
             filename = xdg.Menu._get_menu_file_path(filename)
         # use default if no filename given
         if not filename:
-            candidate = os.environ.get("XDG_MENU_PREFIX", "") + "applications.menu"
+            menuprefix = os.environ.get("XDG_MENU_PREFIX", "")
+            candidate = menuprefix + "applications.menu"
             filename = xdg.Menu._get_menu_file_path(candidate)
         if not filename:
             raise xdg.Menu.ParsingError(
@@ -43,7 +44,14 @@ class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
         try:
             tree = etree.parse(filename)
         except Exception as e:
-            log(xdg.Menu.ParsingError("Not a valid .menu file", filename))
+            log(
+                str(
+                    xdg.Menu.ParsingError(
+                        "Not a valid .menu file: %s" % e,
+                        filename,
+                    )
+                )
+            )
             tree = etree.fromstring("<Menu></Menu>")
 
         # parse menufile
@@ -75,7 +83,9 @@ def read_xdg_menu():
             x.Name
         except AttributeError:
             try:
-                if not x.DesktopEntry.getHidden() and not x.DesktopEntry.getNoDisplay():
+                hidden = x.DesktopEntry.getHidden()
+                nodisplay = x.DesktopEntry.getNoDisplay()
+                if not hidden and not nodisplay:
                     if not x.DesktopEntry.getTryExec() or which(
                         x.DesktopEntry.getTryExec()
                     ):
@@ -132,7 +142,10 @@ def run_desktop_file(desktop_file):
     else:
         xbmcgui.Dialog().notification(
             "Cannot launch program",
-            "Cannot launch %s as no launch program (kioclient or gtk-launch) is installed."
+            (
+                "Cannot launch %s as no launch program"
+                + " (kioclient or gtk-launch) is installed."
+            )
             % (os.path.basename(desktop_file)),
         )
 
@@ -171,20 +184,25 @@ def build_url(base, query):
 
 
 def _main(*args):
-    addon = xbmcaddon.Addon(id="script.xdgmenu")
-    handle = int(sys.argv[1])
-    second_arg = args[1]
-    unused_third_arg = args[2]
-
+    addon = xbmcaddon.Addon(id="script.xdgmenu")  # noqa
+    log("script.xdgmenu starting")
     for i in range(len(args)):
-        log('addon_argv[{}] "{}"'.format(i, args[i]))
+        log("addon_argv[{}] = {}".format(i, args[i]))
+
+    handle = int(args[0])
+    second_arg = args[1]
+    third_arg = args[2] if len(args) > 2 else None  # noqa
 
     if second_arg:
-        args = urllib.parse.parse_qs(second_arg[1:])
-        if "launch" in args:
-            launch(args["launch"][0])
-        else:
-            raise Exception("Unknown args: %s" % args)
+        qs = urllib.parse.parse_qs(second_arg[1:])
+    else:
+        qs = {}
+
+    for k, v in qs.items():
+        log("qs[{}] = {}".format(k, v))
+
+    if "launch" in qs:
+        launch(qs["launch"][0])
     else:
         for path, title, comment, icon in sorted(
             read_xdg_menu(), key=lambda x: x[1].lower()
