@@ -156,10 +156,20 @@ def get_prerun(desktopfile):
         "org.kde.konsole.desktop": "org.kde.konsole",
         "kodi.desktop": "Kodi",
     }
-    if which("kwin_wmgmt_helper") and desktopfile in window_classes:
-        window_class = window_classes[desktopfile]
-        return ["ww", "--class", window_class]
-    return None
+    if not which("kwin_wmgmt_helper"):
+        log("Not using kwin_wmgmt_helper (could not be found)")
+        return
+
+    if desktopfile not in window_classes:
+        log(
+            "Not using prerun (no window class found for desktop file %s)" % desktopfile
+        )
+        return
+
+    window_class = window_classes[desktopfile]
+    prerun = ["ww", "--class", window_class]
+    log("Using prerun: %s" % (prerun,))
+    return prerun
 
 
 def launch(desktop_file):
