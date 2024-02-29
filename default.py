@@ -150,29 +150,27 @@ def run_desktop_file(desktop_file):
         )
 
 
-preruns = {
-    "google-chrome.desktop": [
-        "bash",
-        "-c",
-        """
-if xdotool search --desktop 0 --all --class --name Chrome windowactivate ; then
-  exit
-fi
-exit 1
-""",
-    ]
-}
+def get_prerun(desktopfile):
+    window_classes = {
+        "google-chrome.desktop": "google-chrome",
+        "org.kde.konsole.desktop": "org.kde.konsole",
+        "kodi.desktop": "Kodi",
+    }
+    if which("kwin_wmgmt_helper") and desktopfile in window_classes:
+        window_class = window_classes[desktopfile]
+        return ["ww", "--class", window_class]
+    return None
 
 
 def launch(desktop_file):
-    prerun = preruns.get(os.path.basename(desktop_file), None)
+    prerun = get_prerun(os.path.basename(desktop_file))
     if prerun:
         try:
             subprocess.check_call(prerun)
-        except subprocess.CalledProcessError:
-            run_desktop_file(desktop_file)
-    else:
-        run_desktop_file(desktop_file)
+            return
+        except Exception:
+            pass
+    run_desktop_file(desktop_file)
 
 
 def encodepath(path):
