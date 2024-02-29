@@ -17,6 +17,9 @@ import xdg.IconTheme
 import xdg.Menu
 
 
+WMGMT_HELPER = "kwin_wmgmt_helper"
+
+
 class LenientXMLMenuBuilder(xdg.Menu.XMLMenuBuilder):
     def parse(self, filename=None):
         """Load an applications.menu file.
@@ -156,7 +159,7 @@ def get_prerun(desktopfile):
         "org.kde.konsole.desktop": "org.kde.konsole",
         "kodi.desktop": "Kodi",
     }
-    if not which("kwin_wmgmt_helper"):
+    if not which(WMGMT_HELPER):
         log("Not using kwin_wmgmt_helper (could not be found)")
         return
 
@@ -167,7 +170,7 @@ def get_prerun(desktopfile):
         return
 
     window_class = window_classes[desktopfile]
-    prerun = ["ww", "--class", window_class]
+    prerun = [WMGMT_HELPER, "--class", window_class]
     log("Using prerun: %s" % (prerun,))
     return prerun
 
