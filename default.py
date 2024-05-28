@@ -155,8 +155,9 @@ def run_desktop_file(desktop_file):
 
 def get_prerun(desktopfile):
     window_classes = {
-        "google-chrome.desktop": "google-chrome",
+        "google-chrome.desktop": "Google-chrome",
         "org.kde.konsole.desktop": "org.kde.konsole",
+        "org.kde.kwrite.desktop": "org.kde.kwrite",
         "kodi.desktop": "Kodi",
     }
     if not which(WMGMT_HELPER):
