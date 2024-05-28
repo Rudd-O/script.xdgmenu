@@ -156,6 +156,7 @@ def run_desktop_file(desktop_file):
 def get_prerun(desktopfile):
     window_classes = {
         "google-chrome.desktop": "Google-chrome",
+        "chromium-browser.desktop": "Chromium-browser",
         "org.kde.konsole.desktop": "org.kde.konsole",
         "org.kde.kwrite.desktop": "org.kde.kwrite",
         "kodi.desktop": "Kodi",
