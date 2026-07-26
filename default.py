@@ -141,7 +141,7 @@ def run_desktop_file(desktop_file):
     if which("kioclient"):
         _run_and_forget(["kioclient", "exec", desktop_file])
     elif which("gtk-launch"):
-        _run_and_forget(["gtk-launch", desktop_file])
+        _run_and_forget(["gtk-launch", os.path.basename(desktop_file)])
     else:
         xbmcgui.Dialog().notification(
             "Cannot launch program",
